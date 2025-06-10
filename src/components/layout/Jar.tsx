@@ -37,7 +37,7 @@ function getLogo(displayMode: "sats" | "btc") {
 export function Jar({ name, amount, color, displayMode }: JarProps) {
   const fillPercent = amount / 500000;
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center cursor-pointer hover:scale-105 transition-all duration-300">
       <div className="mb-2">
         <div className="relative w-12 h-20 flex flex-col items-center">
           {/* Jar body */}

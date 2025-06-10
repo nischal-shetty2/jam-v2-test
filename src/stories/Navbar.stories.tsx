@@ -1,11 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Navbar } from "../components/Navbar";
 import { Bitcoin } from "lucide-react";
+import { MemoryRouter } from "react-router-dom";
 
 const meta: Meta<typeof Navbar> = {
   title: "Core/Navbar",
   component: Navbar,
   tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 };
 export default meta;
 
