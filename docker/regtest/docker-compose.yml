@@ -1,0 +1,195 @@
+
+services:
+
+  joinmarket:
+    container_name: jm_regtest_joinmarket
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_native
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      jm_rpc_wallet_file: jm_primary
+      jm_rpc_user: joinmarket
+      jm_rpc_password: joinmarket
+    ports:
+      - "62601:62601"
+      - "28183:28183"
+      - "28283:28283"
+    volumes:
+      - "joinmarket_datadir:/root/.joinmarket"
+      - "initializer_datadir:/root/.regtest-initializer"
+    depends_on:
+      - bitcoind
+      - bitcoind_regtest_initializer
+      - irc
+
+  joinmarket2:
+    container_name: jm_regtest_joinmarket2
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_jam_standalone
+    environment:
+      APP_USER: joinmarket
+      APP_PASSWORD: joinmarket
+      jm_rpc_wallet_file: jm_secondary
+      jm_rpc_user: joinmarket2
+      jm_rpc_password: joinmarket2
+    ports:
+      - "29080:80"
+      - "29183:28183" # exposed for "init setup" routine
+    volumes:
+      - "joinmarket2_datadir:/root/.joinmarket"
+    depends_on:
+      - bitcoind
+      - irc
+
+  joinmarket3:
+    container_name: jm_regtest_joinmarket3
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_jam_standalone
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      WAIT_FOR_BITCOIND: "false"
+      jm_rpc_wallet_file: jm_tertiary
+      jm_rpc_user: joinmarket3
+      jm_rpc_password: joinmarket3
+    ports:
+      - "30080:80"
+      - "30183:28183" # exposed for "init setup" routine
+    volumes:
+      - "joinmarket3_datadir:/root/.joinmarket"
+      - "initializer_datadir:/root/.regtest-initializer"
+    depends_on:
+      - bitcoind
+      - bitcoind_regtest_initializer
+      - irc
+
+  joinmarket_directory_node:
+    container_name: jm_regtest_joinmarket_directory_node
+    build:
+      context: ./dockerfile-deps/joinmarket/directory_node
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      jm_hidden_service_dir: \/root\/.joinmarket\/hidden_service_dir
+      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      jm_blockchain_source: regtest
+      jm_network: testnet
+    volumes:
+      - "joinmarket_directory_node_datadir:/root/.joinmarket"
+      - "./out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
+
+  irc:
+    container_name: jm_regtest_irc
+    restart: unless-stopped
+    image: ghcr.io/ergochat/ergo:v2.10.0@sha256:cb72a03a95724d993c0304658b2c4ce1b2e51a99bd0de0124498cdbb5c80e52c 
+    expose:
+      - 6667
+    volumes:
+      - "irc_datadir:/ircd"
+
+  bitcoind:
+    container_name: jm_regtest_bitcoind
+    restart: unless-stopped
+    image: polarlightning/bitcoind:27.0@sha256:7ac359cacd1c667fae321fe049d3d860eb85f1f14aff805e96246c5dc70f2f13
+    command:
+      # rpcauth (user=regtest; password=regtest)
+      # rpcauth (user=joinmarket; password=joinmarket)
+      # rpcauth (user=joinmarket2; password=joinmarket2)
+      # rpcauth (user=joinmarket3; password=joinmarket3)
+      -rpcauth=regtest:20b58677979ad9d3cf4b78b1d6e85e44$$2ec3e1e1c00c7c58d7aff1d4bf96e4a984ea1af5d676d862fd0faa857a1d4d7c
+      -rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
+      -rpcauth=joinmarket2:521bf9f4468529d49c0a41f9c9f8fdbf$$63ae94a73d2aa45e7ee756945d9b1e469f9873ce026b815d676a748f777e0b8d
+      -rpcauth=joinmarket3:85d4beaa74540c3b08f4fef50d74a59e$$3033c779ea4bfd02a1f3403bc4d012f3e6d19b355f74c5e8de1d3439979d5e4b
+      -datadir=/home/bitcoin/data
+      -walletdir=/home/bitcoin/walletdata
+      -regtest=1
+      -server=1
+      -port=39388
+      -rpcport=43782
+      -rpcbind=0.0.0.0
+      -rpcallowip=0.0.0.0/0
+      -whitelist=0.0.0.0/0
+      -maxmempool=500
+      -debug=rpc
+      -logips=0
+      -networkactive=1
+      -dnsseed=0
+      -uacomment=jmdevbitcoindregtest
+      -printpriority=1
+      -logtimemicros=1
+      -zmqpubrawblock=tcp://0.0.0.0:28332
+      -zmqpubrawtx=tcp://0.0.0.0:28333
+      -zmqpubhashblock=tcp://0.0.0.0:28334
+      -dns=0
+      -listenonion=0
+      -deprecatedrpc=create_bdb
+    expose:
+      - 39388 # P2P
+      - 43782 # RPC
+      - 28332 # ZMQ
+      - 28333 # ZMQ
+      - 28334 # ZMQ
+    ports:
+      - "17782:43782"
+    volumes:
+      - "bitcoin_datadir:/home/bitcoin/data"
+      - "bitcoin_wallet_datadir:/home/bitcoin/walletdata"
+
+  bitcoind_regtest_initializer:
+      container_name: jm_regtest_bitcoind_initializer
+      build:
+        context: ./dockerfile-deps/bitcoin/regtest-initializer
+        dockerfile: Dockerfile
+      restart: on-failure
+      environment:
+        READY_FILE: /root/.regtest-initializer/btc_fully_synched
+        RPC_HOST: bitcoind
+        RPC_PORT: 43782
+        RPC_USER: regtest
+        RPC_PASSWORD: regtest
+      volumes:
+        - "initializer_datadir:/root/.regtest-initializer"
+      depends_on:
+        - bitcoind
+
+  nginx:
+    container_name: jm_regtest_nginx_test_basepath
+    image: nginx
+    volumes:
+      - ./dockerfile-deps/nginx:/etc/nginx/templates
+    ports:
+      - "8000:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  explorer:
+    container_name: jm_regtest_explorer
+    restart: unless-stopped
+    image: getumbrel/btc-rpc-explorer:v3.4.0@sha256:e85a1fe80919d308b1f80de2dc7174e7b61ec79384d695304fbf259b67b53594
+    environment:
+      BTCEXP_HOST: 0.0.0.0
+      BTCEXP_PORT: 3002
+      BTCEXP_BITCOIND_HOST: bitcoind
+      BTCEXP_BITCOIND_PORT: 43782
+      BTCEXP_BITCOIND_USER: regtest
+      BTCEXP_BITCOIND_PASS: regtest
+      BTCEXP_BASIC_AUTH_PASSWORD: joinmarket
+      BTCEXP_PRIVACY_MODE: 'true'
+      BTCEXP_NO_RATES: 'true'
+      BTCEXP_RPC_ALLOWALL: 'true'
+    ports:
+      - "3002:3002"
+    depends_on:
+      - bitcoind
+
+volumes:
+  bitcoin_datadir:
+  bitcoin_wallet_datadir:
+  initializer_datadir:
+  joinmarket_datadir:
+  joinmarket2_datadir:
+  joinmarket3_datadir:
+  joinmarket_directory_node_datadir:
+  irc_datadir:

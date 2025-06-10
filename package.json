@@ -11,7 +11,13 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "prepare": "husky install",
-    "test": "vitest run"
+    "test": "vitest run",
+    "regtest:rebuild": "docker-compose -f docker/regtest/docker-compose.yml build --no-cache",
+    "regtest:up": "cd docker/regtest && ./prepare-setup.sh && docker-compose up -d",
+    "regtest:init": "cd docker/regtest && ./init-setup.sh",
+    "regtest:mine": "cd docker/regtest && ./mine-block.sh",
+    "regtest:down": "docker-compose -f docker/regtest/docker-compose.yml down",
+    "regtest:clear": "docker-compose -f docker/regtest/docker-compose.yml down -v"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
