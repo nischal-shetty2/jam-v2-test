@@ -1,59 +1,88 @@
-# Jam - V2 (Revamped)
+# Jam - V2
 
 ## Tech Stack
 
-- React + TypeScript
-- Vite
-- Tailwind CSS
-- shadcn/ui
-- Storybook
-- TanStack Query
-- Axios
-- React Router
-- lucid-react
-- huskey
+- **Frontend**: React + TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS + shadcn/ui
+- **HTTP Client**: Axios
+- **Routing**: React Router
+- **State Management**: TanStack Query
+- **UI Development**: Storybook
+- **Icons**: Lucide React
+- **Git Hooks**: Husky
 
----
+## Quick Start
 
-## Why This Stack?
+### 1. Automated Setup & Development (Recommended)
 
-### React + TypeScript
+Run the setup script to automatically configure everything and start development **(Only Works for Linux and MacOS)**
 
-- Strong typing, better DX, and a massive ecosystem.
+```bash
+npm run setup
+```
 
-### Vite
+This will:
 
-- Fast dev/build, modern features, zero config.
+- Install Node.js dependencies
+- Set up Docker regtest environment with Joinmarket
+- Create default wallet (`Satoshi.jmdat` with password `test`)
+- Start all required services (Docker containers)
+- Launch development server and Storybook
+- Open both applications in your browser automatically
 
-### Tailwind CSS
+- **Frontend Development Server**: http://localhost:5173
+- **Storybook Component Library**: http://localhost:6006
 
-- Rapid UI with utility classes, minimal bundle size, perfect with components.
+### 2. Manual Setup
 
-### shadcn/ui
+If you prefer manual setup or encounter any issues:
 
-- Tailwind-native, accessible, customizable, Storybook-friendly.
+```bash
+# Install dependencies
+npm install
 
-### Storybook
+# Start regtest environment
+npm run regtest:up
 
-- Build/test components in isolation, improves dev-designer workflow.
+# Initialize and create default wallet
+npm run regtest:init
 
-### Axios
+# Start development servers
 
-- Simple, promise-based HTTP client.
+## Development server
+npm run dev
 
-### TanStack Query
+## Start StoryBook
+npm run storybook
+```
 
-- Handles data fetching, caching, errors—reduces boilerplate.
+### 3. Login to the Application
 
-### React Router
+- Navigate to: http://localhost:5173
+- **Login with**:
+  - Wallet: `Satoshi.jmdat`
+  - Password: `test`
 
-- SPA routing with dynamic/nested layouts, no full page reloads.
+### Regtest Environment
 
-### lucid-react
+- `npm run regtest:up` - Start Joinmarket containers
+- `npm run regtest:init` - Initialize with default wallet
+- `npm run regtest:down` - Stop containers
+- `npm run regtest:clear` - Stop and remove all data
+- `npm run regtest:mine` - Mine a block
+- `npm run regtest:fund` - Fund wallet with test Bitcoin
+- `npm run regtest:logs` - View container logs
+- `npm run regtest:status` - Check container status
 
-- Clean icon set, Tailwind-compatible, lightweight and easy to use.
+### Testing & Development
 
----
+- `npm run test` - Run tests
+- `npm run lint` - Lint code
+
+### Proxy Configuration
+
+Vite is configured to proxy `/api/*` requests to the Joinmarket service, handling HTTPS and CORS automatically.
 
 ## Why Not Alternatives?
 
@@ -76,41 +105,6 @@ Fast, maintainable, and DX-friendly. This stack keeps us agile without sacrifici
 
 ---
 
-## Development Setup
-
-### Understanding the Components
-
-Jam is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) focusing on user-friendliness.
-The web UI serves as a lightweight front end for the JoinMarket API.
-To function, the web UI needs to connect to an instance of JoinMarket with [the API service](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md) running.
-
-### Quick Start with Docker Regtest Environment
-
-1. Start the JoinMarket HTTP API service in regtest:
-
-   ```sh
-   npm run regtest:up
-   ```
-
-2. Initialize the regtest setup:
-
-   ```sh
-   npm run regtest:init
-   ```
-
-   This creates and funds a wallet `Satoshi` with password `test`.
-
-3. Start the UI development server:
-
-   ```sh
-   npm run dev
-   ```
-
-4. (Optional) Mine blocks periodically (for features that require confirmations):
-   ```sh
-   npm run regtest:mine
-   ```
-
 ### Additional Commands
 
 - Rebuild Docker images:
@@ -130,8 +124,17 @@ To function, the web UI needs to connect to an instance of JoinMarket with [the 
   npm run regtest:clear
   ```
 
-### Dev Environment Features
+## Troubleshooting
 
-When running Jam in dev mode, additional Jam instances are provided by default. These instances can be used to set up different wallets and simulate collaborative transactions. A block explorer and RPC terminal are also available for directly interacting with the regtest node.
+### Container Issues
 
-For more detailed information about the Docker setup, see [docker/regtest/readme.md](docker/regtest/readme.md).
+```bash
+# Check container status
+npm run regtest:status
+
+# View logs
+npm run regtest:logs
+
+# Manual restart
+npm run regtest:restart
+```

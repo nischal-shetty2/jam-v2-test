@@ -1,6 +1,7 @@
-import { Wallet, Sun, Moon, Settings } from "lucide-react";
+import { Wallet, Sun, Moon, Settings, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { clearSession } from "@/lib/session";
 
 interface NavbarProps {
   theme: string;
@@ -19,6 +20,11 @@ export function Navbar({
   getLogo,
   jars,
 }: NavbarProps) {
+  const handleLogout = () => {
+    clearSession();
+    window.location.href = "/login";
+  };
+
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-gray-100 text-black dark:bg-[#23262b] dark:text-white transition-colors duration-300">
       <div className="flex items-center flex-1 min-w-0">
@@ -71,6 +77,14 @@ export function Navbar({
           size="icon"
           className="text-black dark:text-white">
           <Settings />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleLogout}
+          aria-label="Logout"
+          className="text-black dark:text-white dark:hover:bg-zinc-700 hover:bg-zinc-200">
+          <LogOut />
         </Button>
       </div>
     </header>
