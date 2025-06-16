@@ -1,28 +1,47 @@
 import { useEffect, useState, createContext, useContext } from "react";
 import { Navbar } from "../Navbar";
 import { Footer } from "../Footer";
+import { useQuery } from "@tanstack/react-query";
+import { getWalletDisplay, getJmSession } from "@/lib/JmWalletApi";
+import { getSession } from "@/lib/session";
 
-type JarColor = "#e2b86a" | "#3b5ba9" | "#c94f7c" | "#a67c52" | "#7c3fa6";
+export type JarColor =
+  | "#e2b86a"
+  | "#3b5ba9"
+  | "#c94f7c"
+  | "#a67c52"
+  | "#7c3fa6";
 
-const jars: Array<{
+// Define jar templates - without balances
+const jarTemplates: Array<{
+  name: string;
+  color: JarColor;
+}> = [
+  { name: "Apricot", color: "#e2b86a" },
+  { name: "Blueberry", color: "#3b5ba9" },
+  { name: "Cherry", color: "#c94f7c" },
+  { name: "Date", color: "#a67c52" },
+  { name: "Elderberry", color: "#7c3fa6" },
+];
+
+export interface Jar {
   name: string;
   color: JarColor;
   balance: number;
-  icon: string;
-}> = [
-  { name: "Apricot", color: "#e2b86a", balance: 42717980, icon: "🍑" },
-  { name: "Blueberry", color: "#3b5ba9", balance: 23298449, icon: "🫐" },
-  { name: "Cherry", color: "#c94f7c", balance: 3811238, icon: "🍒" },
-  { name: "Date", color: "#a67c52", balance: 7051475, icon: "🌴" },
-  { name: "Elderberry", color: "#7c3fa6", balance: 0, icon: "🫐" },
-];
+  account?: string;
+}
 
 interface DisplayModeContextType {
   displayMode: "sats" | "btc";
   toggleDisplayMode: () => void;
   formatAmount: (amount: number) => string;
   getLogo: (size?: "sm" | "lg") => React.ReactNode;
-  jars: typeof jars;
+  jars: Jar[];
+  totalBalance: number;
+  walletName: string | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetchWalletData: () => void;
 }
 
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(
@@ -61,6 +80,64 @@ export function Layout({ children }: LayoutProps) {
     }
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // Get wallet name from session
+  const session = getSession();
+  const walletFileName = session?.walletFileName;
+
+  const {
+    data: walletData,
+    isLoading,
+    error,
+    refetch: refetchWalletData,
+  } = useQuery({
+    queryKey: ["walletDisplay", walletFileName],
+    queryFn: async () => {
+      if (!walletFileName) {
+        throw new Error("No wallet file name in session");
+      }
+
+      // First ensure we have a session
+      const sessionInfo = await getJmSession();
+      if (!sessionInfo.session) {
+        throw new Error("No active session");
+      }
+
+      // Then get wallet display data
+      return getWalletDisplay(walletFileName);
+    },
+    enabled: !!walletFileName,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 15000, // Consider data fresh for 15 seconds
+  });
+
+  // Create the jars array by combining jar templates with actual account data
+  const jars: Jar[] = walletData
+    ? walletData.walletinfo.accounts.map((account, index) => {
+        // Parse balance as a float from BTC value, then convert to sats (multiply by 100,000,000)
+        const btcBalance = parseFloat(account.available_balance as any);
+        const satsBalance = Math.round(btcBalance * 100_000_000);
+
+        // Only use up to 5 accounts, matching with jar templates
+        if (index >= jarTemplates.length) {
+          return {
+            name: `Account ${account.account}`,
+            color: "#808080" as JarColor, // Default color
+            balance: satsBalance,
+            icon: "📁",
+            account: account.account,
+          };
+        }
+
+        return {
+          ...jarTemplates[index],
+          balance: satsBalance,
+          account: account.account,
+        };
+      })
+    : jarTemplates.map((jar) => ({ ...jar, balance: 0 }));
+
+  const totalBalance = jars.reduce((acc, jar) => acc + jar.balance, 0);
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
   const toggleDisplayMode = () =>
@@ -110,6 +187,11 @@ export function Layout({ children }: LayoutProps) {
     formatAmount,
     getLogo,
     jars,
+    totalBalance,
+    walletName: walletData?.walletinfo.wallet_name || null,
+    isLoading,
+    error: error as Error | null,
+    refetchWalletData,
   };
 
   return (
@@ -122,6 +204,7 @@ export function Layout({ children }: LayoutProps) {
           formatAmount={formatAmount}
           getLogo={getLogo}
           jars={jars}
+          isLoading={isLoading}
         />
         <main className="flex-1">{children}</main>
         <Footer />

@@ -3,7 +3,10 @@ interface JarProps {
   amount: number;
   color: "#e2b86a" | "#3b5ba9" | "#c94f7c" | "#a67c52" | "#7c3fa6";
   displayMode: "sats" | "btc";
+  totalBalance?: number;
 }
+
+type JarFillLevel = 0 | 1 | 2 | 3;
 
 function formatAmount(amount: number, displayMode: "sats" | "btc") {
   if (displayMode === "btc") {
@@ -34,8 +37,41 @@ function getLogo(displayMode: "sats" | "btc") {
   );
 }
 
-export function Jar({ name, amount, color, displayMode }: JarProps) {
-  const fillPercent = amount / 500000;
+// Function to calculate the jar fill level based on jar balance relative to total balance
+const calculateJarFillLevel = (
+  jarBalance: number,
+  totalBalance: number
+): JarFillLevel => {
+  if (totalBalance === 0) return 0;
+  if (jarBalance > totalBalance / 2) return 3;
+  if (jarBalance > totalBalance / 4) return 2;
+  if (jarBalance > 0) return 1;
+  return 0;
+};
+
+// Convert fill level to percentage for the visual display
+const fillLevelToPercent = (fillLevel: JarFillLevel): number => {
+  switch (fillLevel) {
+    case 0:
+      return 0;
+    case 1:
+      return 30;
+    case 2:
+      return 60;
+    case 3:
+      return 90;
+  }
+};
+
+export function Jar({
+  name,
+  amount,
+  color,
+  displayMode,
+  totalBalance = 0,
+}: JarProps) {
+  const fillLevel = calculateJarFillLevel(amount, totalBalance);
+  const fillPercent = fillLevelToPercent(fillLevel);
   return (
     <div className="flex flex-col items-center cursor-pointer hover:scale-105 transition-all duration-300">
       <div className="mb-2">

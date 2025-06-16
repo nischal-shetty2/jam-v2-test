@@ -16,6 +16,7 @@ export const Sats: Story = {
     amount: 15000000,
     color: "#e2b86a",
     displayMode: "sats",
+    totalBalance: 50000000,
   },
 };
 
@@ -25,6 +26,7 @@ export const BTC: Story = {
     amount: 20000000,
     color: "#3b5ba9",
     displayMode: "btc",
+    totalBalance: 50000000,
   },
 };
 
@@ -34,14 +36,16 @@ export const Empty: Story = {
     amount: 0,
     color: "#c94f7c",
     displayMode: "sats",
+    totalBalance: 50000000,
   },
 };
 
 export const Full: Story = {
   args: {
-    name: "Empty Jar",
+    name: "Full Jar",
     amount: 50000000,
     color: "#a67c52",
     displayMode: "sats",
+    totalBalance: 100000000,
   },
 };

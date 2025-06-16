@@ -72,12 +72,12 @@ export interface SessionResponse {
 export interface WalletDisplayResponse {
   walletinfo: {
     wallet_name: string;
-    total_balance: number;
-    available_balance: number;
+    total_balance: string;
+    available_balance: string;
     accounts: Array<{
       account: string;
-      account_balance: number;
-      available_balance: number;
+      account_balance: string;
+      available_balance: string;
     }>;
   };
 }

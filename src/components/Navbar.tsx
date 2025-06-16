@@ -1,7 +1,8 @@
-import { Wallet, Sun, Moon, Settings, LogOut } from "lucide-react";
+import { Wallet, Sun, Moon, Settings, LogOut, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { clearSession } from "@/lib/session";
+import type { Jar } from "./layout/Layout";
 
 interface NavbarProps {
   theme: string;
@@ -9,7 +10,8 @@ interface NavbarProps {
   toggleDisplayMode: () => void;
   formatAmount: (amount: number) => string;
   getLogo: (size: "sm" | "lg") => React.ReactNode;
-  jars: { balance: number }[];
+  jars: Jar[];
+  isLoading?: boolean;
 }
 
 export function Navbar({
@@ -19,11 +21,14 @@ export function Navbar({
   formatAmount,
   getLogo,
   jars,
+  isLoading = false,
 }: NavbarProps) {
   const handleLogout = () => {
     clearSession();
     window.location.href = "/login";
   };
+
+  const totalBalance = jars.reduce((acc, jar) => acc + jar.balance, 0);
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-gray-100 text-black dark:bg-[#23262b] dark:text-white transition-colors duration-300">
@@ -37,15 +42,21 @@ export function Navbar({
             dev
           </Badge>
           <div className="text-lg font-light tracking-wider flex items-center min-h-[40px]">
-            <span
-              className="tabular-nums text-center select-none cursor-pointer"
-              onClick={toggleDisplayMode}
-              title="Click to toggle sats/bitcoin">
-              {formatAmount(jars.reduce((acc, jar) => acc + jar.balance, 0))}
-            </span>
-            <span className="flex items-center min-h-[32px]">
-              {getLogo("sm")}
-            </span>
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+            ) : (
+              <>
+                <span
+                  className="tabular-nums text-center select-none cursor-pointer"
+                  onClick={toggleDisplayMode}
+                  title="Click to toggle sats/bitcoin">
+                  {formatAmount(totalBalance)}
+                </span>
+                <span className="flex items-center min-h-[32px]">
+                  {getLogo("sm")}
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>

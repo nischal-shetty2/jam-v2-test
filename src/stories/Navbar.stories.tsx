@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Navbar } from "../components/Navbar";
 import { Bitcoin } from "lucide-react";
 import { MemoryRouter } from "react-router-dom";
+import type { JarColor } from "@/components/layout/Layout";
 
 const meta: Meta<typeof Navbar> = {
   title: "Core/Navbar",
@@ -23,7 +24,10 @@ const mockFormatAmount = (amount: number) => `${amount} sats`;
 const mockGetLogo = (size: "sm" | "lg") => (
   <Bitcoin size={size === "sm" ? 18 : 32} />
 );
-const mockJars = [{ balance: 12345 }, { balance: 67890 }];
+const mockJars = [
+  { name: "Apricot", balance: 12345, color: "#e2b86a" as JarColor },
+  { name: "Blueberry", balance: 67890, color: "#3b5ba9" as JarColor },
+];
 
 export const Default: Story = {
   args: {
