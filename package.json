@@ -12,7 +12,6 @@
     "build-storybook": "storybook build",
     "prepare": "husky install",
     "test": "vitest run",
-    "setup": "./setup.sh",
     "regtest:rebuild": "docker-compose -f docker/regtest/docker-compose.yml build --no-cache",
     "regtest:up": "cd docker/regtest && ./prepare-setup.sh && docker-compose up -d",
     "regtest:restart": "docker-compose -f docker/regtest/docker-compose.yml restart joinmarket",

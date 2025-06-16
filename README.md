@@ -14,29 +14,7 @@
 
 ## Quick Start
 
-### 1. Automated Setup & Development (Recommended)
-
-Run the setup script to automatically configure everything and start development **(Only Works for Linux and MacOS)**
-
-```bash
-npm run setup
-```
-
-This will:
-
-- Install Node.js dependencies
-- Set up Docker regtest environment with Joinmarket
-- Create default wallet (`Satoshi.jmdat` with password `test`)
-- Start all required services (Docker containers)
-- Launch development server and Storybook
-- Open both applications in your browser automatically
-
-- **Frontend Development Server**: http://localhost:5173
-- **Storybook Component Library**: http://localhost:6006
-
-### 2. Manual Setup
-
-If you prefer manual setup or encounter any issues:
+### Development Setup
 
 ```bash
 # Install dependencies
@@ -57,23 +35,8 @@ npm run dev
 npm run storybook
 ```
 
-### 3. Login to the Application
-
-- Navigate to: http://localhost:5173
-- **Login with**:
-  - Wallet: `Satoshi.jmdat`
-  - Password: `test`
-
-### Regtest Environment
-
-- `npm run regtest:up` - Start Joinmarket containers
-- `npm run regtest:init` - Initialize with default wallet
-- `npm run regtest:down` - Stop containers
-- `npm run regtest:clear` - Stop and remove all data
-- `npm run regtest:mine` - Mine a block
-- `npm run regtest:fund` - Fund wallet with test Bitcoin
-- `npm run regtest:logs` - View container logs
-- `npm run regtest:status` - Check container status
+- **Frontend Development Server**: http://localhost:5173
+- **Storybook Library**: http://localhost:6006
 
 ### Testing & Development
 
